@@ -12,13 +12,16 @@
 
 function main() {
 
-  const PROCESS_LABEL = "AUTO_TRACK";   //-- Look for threads with this label to process
-  const DEST_LABEL    = "Jobs";          //-- Label to move threads to after processed
+  //-- Job Configuration Blocks
+  // const PROCESS_LABEL = "AUTO_TRACK";             //-- Look for threads with this label to process
+  // const DEST_LABEL    = "Followup";               //-- Label to move threads to after processed
+  // const ATTACH_FILE   = "Don!s Resume 2021c.pdf";
+  // const REPLY_FILE    = "Submission Followup";
+
+  const PROCESS_LABEL = "AUTO_RESUME";            //-- Look for threads with this label to process
+  const DEST_LABEL    = "Jobs";                   //-- Label to move threads to after processed
   const ATTACH_FILE   = "Don!s Resume 2021c.pdf";
   const REPLY_FILE    = "Submission Followup";
-  // const LOG_FILE      = "resumeBot_log.txt"
-  // var logFile=getLog("LOG_FILE");
-
 
   var thread = null;
   var msgId = null;
@@ -39,7 +42,6 @@ function main() {
   Logger.log("Found Threads: " + threads.length);
 
   //--- Setup text to use in reply
-
   var oReplyFile = getFileObj(REPLY_FILE);
   if (oReplyFile == null) {
     Logger.log("ERROR: Could not open Reply text file. Program exiting.");
@@ -57,10 +59,9 @@ function main() {
 
 
   //--- Loop through list, process threads
-  // numThreads = threads.length;
   for (var i in threads){
-    Logger.log("Thread: " + i);
-    // writelog("Processing Thread: " + i);
+    Logger.log("  Thread: " + i);
+ 
     setLabel(threads[i], DEST_LABEL);
     msgId = threads[i].getMessages()[0].getId();
     oMsg = GmailApp.getMessageById(msgId);  
@@ -73,103 +74,6 @@ function main() {
   //---   FUNCTIONS   ----
   //----------------------
 
-
-
-// function main() {
-
-//   const PROCESS_LABEL = "AUTO_RESUME";   //-- Look for threads with this label to process
-//   const DEST_LABEL    = "Jobs";          //-- Label to move threads to after processed
-//   const ATTACH_FILE   = "Don!s Resume 2021c.pdf";
-//   const REPLY_FILE    = "Job Lead Reply";
-//   // const LOG_FILE      = "resumeBot_log.txt"
-//   // var logFile=getLog("LOG_FILE");
-
-
-//   var thread = null;
-//   var msgId = null;
-//   var threadId;
-//   var oMsg = null;
-//   var replyText = null;    //-- Text to be used for reply
-//   var oAttachment = null;  //-- FileObject to be attached to reply
-//   var replyId = null;
-
-
-//   //--- Open users mailbox, and get tagged threads to process
-  
-//   var threads = getThreads(PROCESS_LABEL);
-//   if (threads.length == 0) {
-//     Logger.log("No threads to process. Program exiting.");
-//     return new Array();
-//   }
-  
-//     // Logger.log("Threads to process: " + threads.length);
-//     // writelog("Found: " + threads.length + " threads to process");
-
-//   //--- Setup text to use in reply
-
-//   var oReplyFile = getFileObj(REPLY_FILE);
-//   if (oReplyFile == null) {
-//     Logger.log("ERROR: Could not open Reply text file. Program exiting.");
-//     return new Array();
-//    }
-//    else {
-//      replyText = oReplyFile.getBody().getText();
-//      oReplyFile = null;  //-- Unset variable
-//    }
-
-//   //-- Setup file to attach to reply
-//   oAttachment = getFileObj(ATTACH_FILE, MimeType.PDF);
-
-//   //--- Loop through list, process threads
-//   // numThreads = threads.length;
-//   for (var i in threads){
-//     Logger.log("Thread: " + i);
-//     // writelog("Processing Thread: " + i);
-//     setLabel(threads[i], DEST_LABEL);
-//     msgId = threads[i].getMessages()[0].getId();
-//     oMsg = GmailApp.getMessageById(msgId);  
-//     replyId = replyToMsg(oMsg, replyText, oAttachment);
-//     threads[i].moveToArchive();
-//   }
-// }
-
-  //----------------------
-  //---   FUNCTIONS   ----
-  //----------------------
-
-// function doGet(e) {
-//   Logger.log(e);
-// }
-
-
-// function doPost(e) {
-//   Logger.log("Posting");
-// }
-
-/**
- * logLine  Writes a line to the log file
- * 
- * @param {string} filename Name logfile to open
- * @param {string} strLine Data line to write to the log file
- * @return void
- */
-
-// function logLine(filename, strLine)
-// {
-//   var file = null;
-//   var now = new Date();
-//   var timeZone = AdsApp.currentAccount().getTimeZone();
-//   var noonString = Utilities.formatDate(now, timeZone, 'MMMM dd, yyyy 12:00:00 Z');
-//   var noon = new Date(noonString);
-
-//   var iterator = DriveApp.getFilesByName(filename);
-//   if (! iterator.hasNext()) {
-//     Logger.log("Could not open logfile: " + filename);
-//   }
-//   while (iterator.hasnext() && file == null) {
-//     var file = iterator.next();
-//   }
-// }
 
 /**
  * getThreads
@@ -190,20 +94,16 @@ function getThreads(strLabel)
   };
 }
 
+/**
+ * clearLabels
+ * 
+ * Removes all labels from a thread object, of an array of thread objects
+ * 
+ * @param {threads[]} threads - array of gmailApp objects for label removal
+* @returns {threads[] threads -
+ */
+function clearLabels(threads) {
 
-function getLog(strFilename) {
-  Logger.log("Opening log file: "+strFilename);
-  var files = DriveApp.getFilesByName(strFilename); // Get all files with name.
-   while (files.hasNext()) {
-      var file = files.next();
-      var fileID = file.getId();
-      logFile = DriveApp.getFileById(fileID);
-      return logFile;
-    }
-  }
-
-function writeLog(objFile, txtContent) {
-  objFile.append(txtContent);
 }
 
 
@@ -303,8 +203,9 @@ function getFileObj(fileName, getAsType = null){
  * @returns {int} MessageId of the reply sent
  */
 function replyToMsg(oMsg, strReplyTxt, oAttachment) {
-  var sender = oMsg.getFrom()
 
+  var sender = oMsg.getFrom()
+  // Split sender name on spaces to get first name
   var firstName = sender.split(" ")[0];
   var subject = "RE: " + oMsg.getSubject();
   var strBody = "Dear " + firstName + ",\n\n" + strReplyTxt;
@@ -315,7 +216,7 @@ function replyToMsg(oMsg, strReplyTxt, oAttachment) {
     attachments: [oAttachment]
   });
 
-  oDraft.send();
+  //oDraft.send();
   return oDraft.getId();
 }
 
