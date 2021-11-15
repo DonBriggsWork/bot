@@ -1,0 +1,44 @@
+<style>
+  *      {box-sizing: border-box; }
+  body   {background-color: white; font-family: Verdana, sans-serif;}
+  h1     {font-weight: bold;}
+  p      {font-weight: normal;}
+  button {width: 100px;}
+
+/* Styles for grid layout configuration */
+
+.grid-container {
+  display: grid;
+  grid-template-areas:
+    'header header'
+    'menu main';
+  grid-gap: 1px;
+  padding: 0px;
+  width: 100%;
+}
+
+.grid-container > div {
+  /* background-color: rgba(255, 255, 255, 0.8); */
+}
+
+.header {
+  grid-area: header;
+  text-align: center;
+  padding: 0px 0;
+  background-color: #ddd;
+  font-size: 30px;
+  font-weight: bold;
+ }
+.nav { 
+  grid-area: menu;
+  width: 110px;
+  background-color: #ddd;
+  text-align: left;
+}
+.content { 
+  grid-area: main;
+  width: 400px;
+  background-color: #bbb;
+  text-align: left;
+ }
+</style>
