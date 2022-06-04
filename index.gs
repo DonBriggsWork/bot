@@ -5,6 +5,14 @@
  */
 
 function doGet(e) {
+
+  if (getScrProp('init')) {
+    Logger.log('init');
+  } else {
+    Logger.log('NOT init');
+    setScriptProps();
+  }
+
   var params = JSON.stringify(e);
   Logger.log(params);
   var out =  HtmlService
@@ -23,13 +31,3 @@ function include(fileName){
   return "\n" + partial + "\n";
 }
 
-/**
- * threads
- * 
- * Switched GUI to 'threads' mode
- * 
- * <param> 
- */
-function threads() {
-
-}

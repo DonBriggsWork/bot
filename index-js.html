@@ -1,10 +1,11 @@
     <script>
-      document.getElementById("btnThreads").addEventListener("click", Threads);
+      document.getElementById("btnRunThreads").addEventListener("click", btnRunThreadsClick);
 
-      function Threads(){
+      function btnRunThreadsClick(){
         // var uname = document.getElementById("username").value;
         // document.getElementById("username").value = "";
-        google.script.run.threads();
+        console.log("btnRunThreadsClick");
+        google.script.run.runThreads();
       }
 
     </script>

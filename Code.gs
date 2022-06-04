@@ -8,129 +8,87 @@
  * Search through inbox for messages with a certian label. Reply to
  * them with a standard template, attach resume, mark them as read, 
  * and move them to the "Jobs" label.
+ * 
+ * Branch: read_from_sheet
  */
-
-
-function main() {
-
-  const DEBUG = 0;
-
-  //-- Job Configuration Blocks
-  // const PROCESS_LABEL = "AUTO_TRACK";             //-- Look for threads with this label to process
-  // const DEST_LABEL    = "Followup";               //-- Label to move threads to after processed
-  // const ATTACH_FILE   = "Don!s Resume 2021c.pdf";
-  // const REPLY_FILE    = "Submission Followup";
-
-  const PROCESS_LABEL = "AUTO_RESUME";                //-- Look for threads with this label to process
-  const DEST_LABEL    = "Followup";                   //-- Label to move threads to after processed
-  const ATTACH_FILE   = "Don!s Resume 2021c.pdf";
-  const REPLY_FILE    = "Job Lead Reply";
-
-  var thread = null;
-  var msgId = null;
-  var threadId;
-  var oMsg = null;
-  var replyText = null;    //-- Text to be used for reply
-  var oAttachment = null;  //-- FileObject to be attached to reply
-  var replyId = null;
-
-  //--- Open users mailbox, and get tagged threads to process
-
-  var threads = getThreads(PROCESS_LABEL);
-  if (threads.length == 0) {
-    Logger.log("No threads to process. Program exiting.");
-    return new Array();
-  }
-  Logger.log("Found Threads: " + threads.length);
-
-
-  //--- Setup text to use in reply
-  var oReplyFile = getFileObj(REPLY_FILE);
-  if (oReplyFile == null) {
-    Logger.log("ERROR: Could not open Reply text file. Program exiting.");
-    return new Array();
-  }
-  else {
-     Logger.log("Located response template: " + REPLY_FILE);
-     replyText = oReplyFile.getBody().getText();
-  }
-
-  //-- Setup file to attach to reply
-  oAttachment = getFileObj(ATTACH_FILE, MimeType.PDF);
-  Logger.log("Attachment: " + ATTACH_FILE);
-
-  //--- Begin main processing ---//
-
-  var i = 1;
-  for (let thread of threads) {
-    Logger.log("  Thread: " +i + "/" + threads.length);
-    thread.moveToArchive();
-    thread = clearLabels(thread);
-    setLabel(thread, DEST_LABEL);
-    msgId = thread.getMessages()[0].getId();
-    Logger.log("Subject:" + thread.getMessages()[0].getSubject());
-    oMsg = GmailApp.getMessageById(msgId);
-    reply = getReply(oMsg, replyText, oAttachment);
-
-    if (DEBUG === 0) {
-      reply.send()
-    } else {
-      if (i >= 3) {
-        Logger.log("Breaking after 3htee messages for DEBUB mode");
-        break;
-      }
-    }
-    i++;
-  }
-}
-
-  //-------------------------------------------------------------------------------------
-  //-----------------------------------   FUNCTIONS   -----------------------------------
-  //-------------------------------------------------------------------------------------
 
 /**
- * getSheet
+ * runThreads
  * 
- * Gets a connection to the spreadsheet holding rules data. Note
- * that the rules spreadsheet should be in the same directory as
- * the project files.
- * 
- * @param {string} fileName Name of the spreadsheet file
- * @return {object} GoogleSheets Spreadsheet object
+ * Selects threads from the inbox, based on their label, automatically
+ * sends a reply and begins tracking the thread
  */
 
-function getSheet(fileName){
-  
-  var id = null;
-  var files = DriveApp.getFiles();
-  while (files.hasNext() && id == null) {
-    var file = files.next();
-    if (file.getName() == fileName) {
-      id = file.getId();
-    }
+function runThreads() {
+
+  Logger.log("Beginning Run");
+  SetVars();
+  Logger.log("Searching for: " + getProp('PROCESS_LABEL'));
+
+  var threads = getThreads(getProp('PROCESS_LABEL'));
+     Logger.log("  - Found threads to process: " + threads.length);
+  if (threads.length == 0) {
+    Logger.log("No threads to process. Program exiting.");
+    return new Array(); 
   }
-  var ss = SpreadsheetApp.openById(id);
-  return ss;
+  else {
+    Logger.log("Found threads to process: " + threads.length);
+  }
+
+  var oReplyFile  = getFileObj(getProp('REPLY_FILE'));
+  var replyText   = oReplyFile.getBody().getText();
+  var oAttachment = getFileObj(getProp('ATTACH_FILE'), MimeType.PDF);
+  Logger.log("Attachment: " + getProp('ATTACH_FILE'));
+
+  var results = Array();
+
+  for (let thread of threads) {
+    var msgId = thread.getMessages()[0].getId();
+    var oMsg = GmailApp.getMessageById(msgId);
+    thread.moveToArchive();
+    // thread = clearLabels(thread);
+    thread.removeLabel(getProp('PROCESS_LABEL'));
+    setLabel(thread, getProp('DEST_LABEL'));
+
+    var oReply = getReply(oMsg, replyText, oAttachment);
+
+    Logger.log("  - Processing Message ID: " + msgId);
+    var result = {
+        'msgId':   msgId,
+        'subject': thread.getMessages()[0].getSubject(),
+        'sender':  thread.getMessages()[0].getFrom(),
+        'recDate': thread.getMessages()[0].getDate(),
+        'replyDate': "xxx",
+        'replyId': oReply.getId(),
+    }    
+
+    if (getProp('DEBUG') > 0) {
+       Logger.log("  * FIRING");
+      oReply.send()
+    }
+  }  
+  Logger.log("Completed");
 }
+
 
 /**
  * getThreads
  * 
  * Retuns an array of Thread objects with a particular label
- * 
+ * r
  * @param {string} strCriteria Label gmail search criteria string
  * @return array of Thread objects that match search criteria
 */
 
 function getThreads(strLabel){
+  var threads = new Array();
+  Logger.log(" - GETTING THREADS FROM INBOX: " + strLabel);  
   Logger.log("Search: "  + strLabel);
+  
   var threads = GmailApp.search('label: ' + strLabel);
-  if (threads.length > 0) {
-    return threads;
-  } else {
-    return new Array();
-  };
+  return threads;
 }
+
 
 /**
  * clearLabels
@@ -142,6 +100,7 @@ function getThreads(strLabel){
  */
 
 function clearLabels(thread){
+  Logger.log("  - Clearing message labels");
   let labels = thread.getLabels();
     for (let label of labels) {
       thread.removeLabel(label);
@@ -152,7 +111,7 @@ function clearLabels(thread){
 
 
 /**
- * setLabel
+ * setLabels
  * 
  * Clear all existing labels for a thread, and set a new one
  * 
@@ -161,13 +120,13 @@ function clearLabels(thread){
  * @returns void
  */
 
-function setLabel(thread, destLabel) {
+function setLabels(thread, destLabels) {
 
   var newLabel = GmailApp.getUserLabelByName(destLabel);
   if (newLabel !== null){
     thread.addLabel(newLabel).refresh();
   } else {
-    Logger.log("ERROR: Could not add label: '" + destLabel + "', does not exist.");
+    throw new Error("ERROR: Could not add label: '" + destLabel + "', does not exist.");
   }
   return thread;
 }
@@ -187,6 +146,7 @@ function setLabel(thread, destLabel) {
 
 function getFileObj(fileName, getAsType = null){
 
+  Logger.log("  - Getting File Object");
   var oFile = null;
   var FileIterator = DriveApp.getFilesByName(fileName);
 
@@ -229,21 +189,21 @@ function getFileObj(fileName, getAsType = null){
 
 
 /**
- * replyToMsg
+ * getReply
  * 
  * Create a gmailApp Draft object that will be used to reply
- * to the email messate
+ * to the email, and return it.
  * 
  * @param {object} oMsg -  The gmail message object to be replied to
  * @param {string} strReplyText - Text to be sent as the body of reply
  * @param {object} oAttachment - Attachment to be added to draft reply object
  * @returns {int} MessageId of the reply sent
  */
+
 function getReply(oMsg, strReplyTxt, oAttachment){
   var sender = oMsg.getFrom();
   var firstName = sender.split(" ")[0];
   var subject = "RE: " + oMsg.getSubject();
-  // var subject = thread.getFirstMessageSubject();
   var strBody = "Dear " + firstName + ":,\n\n" + strReplyTxt;
 
   var oDraft = oMsg.createDraftReply(strBody,{
@@ -253,4 +213,3 @@ function getReply(oMsg, strReplyTxt, oAttachment){
   });
   return oDraft;
 }
-
