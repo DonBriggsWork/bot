@@ -8,9 +8,24 @@
  * Search through inbox for messages with a certian label. Reply to
  * them with a standard template, attach resume, mark them as read, 
  * and move them to the "Jobs" label.
- * 
- * Branch: read_from_sheet
+
  */
+
+  function main() {
+
+    Logger.log("Beginning MAIN  Run");
+    SetVars();
+    threads = getThreads(getProp('PROCESS_LABEL'));
+    if(threads.length == 0) {
+      Logger.log("No threads  to process");
+      return;
+    }
+    else {
+      Logger.log("Found threads to process: " + threads.length);
+    }
+    runThreads(threads);
+  }  
+
 
 /**
  * runThreads
@@ -19,53 +34,48 @@
  * sends a reply and begins tracking the thread
  */
 
-function runThreads() {
+function runThreads(threads) {
 
-  Logger.log("Beginning Run");
-  SetVars();
-  Logger.log("Searching for: " + getProp('PROCESS_LABEL'));
-
-  var threads = getThreads(getProp('PROCESS_LABEL'));
-     Logger.log("  - Found threads to process: " + threads.length);
-  if (threads.length == 0) {
-    Logger.log("No threads to process. Program exiting.");
-    return new Array(); 
-  }
-  else {
-    Logger.log("Found threads to process: " + threads.length);
-  }
+  Logger.log("Beginning: runThreads");
 
   var oReplyFile  = getFileObj(getProp('REPLY_FILE'));
   var replyText   = oReplyFile.getBody().getText();
   var oAttachment = getFileObj(getProp('ATTACH_FILE'), MimeType.PDF);
   Logger.log("Attachment: " + getProp('ATTACH_FILE'));
+  oLabelRemove = GmailApp.getUserLabelByName(getProp('PROCESS_LABEL'));
+  oLabelAdd    = GmailApp.getUserLabelByName(getProp('DEST_LABEL'));
 
-  var results = Array();
+Logger.log("BEGINNING LOOPING::"); 
 
   for (let thread of threads) {
     var msgId = thread.getMessages()[0].getId();
     var oMsg = GmailApp.getMessageById(msgId);
     thread.moveToArchive();
-    // thread = clearLabels(thread);
-    thread.removeLabel(getProp('PROCESS_LABEL'));
-    setLabel(thread, getProp('DEST_LABEL'));
+    thread.removeLabel(oLabelRemove);
+    thread.addLabel(oLabelAdd);
 
     var oReply = getReply(oMsg, replyText, oAttachment);
 
-    Logger.log("  - Processing Message ID: " + msgId);
-    var result = {
-        'msgId':   msgId,
-        'subject': thread.getMessages()[0].getSubject(),
-        'sender':  thread.getMessages()[0].getFrom(),
-        'recDate': thread.getMessages()[0].getDate(),
-        'replyDate': "xxx",
-        'replyId': oReply.getId(),
-    }    
+    Logger.log("  - Processing Message ID: " + msgId);  
 
-    if (getProp('DEBUG') > 0) {
+    if (getProp('DEBUG') == 0) {
        Logger.log("  * FIRING");
-      oReply.send()
+      replyId = oReply.send();
+    } else {
+      replyId = "XXX";
     }
+
+    var result = {
+      'msgId':   msgId,
+      'subject': thread.getMessages()[0].getSubject(),
+      'sender':  thread.getMessages()[0].getFrom(),
+      'recDate': thread.getMessages()[0].getDate(),
+      'replyDate': Utilities.formatDate(new Date(), "GMT+6", "dd/MM/yyyy"),
+      'replyId': replyId,
+    }
+
+    Logger.log(result);
+    Logger.log("=============================== ITERATE ===============================");
   }  
   Logger.log("Completed");
 }
@@ -75,17 +85,15 @@ function runThreads() {
  * getThreads
  * 
  * Retuns an array of Thread objects with a particular label
- * r
+ * 
  * @param {string} strCriteria Label gmail search criteria string
  * @return array of Thread objects that match search criteria
 */
 
-function getThreads(strLabel){
-  var threads = new Array();
-  Logger.log(" - GETTING THREADS FROM INBOX: " + strLabel);  
-  Logger.log("Search: "  + strLabel);
-  
-  var threads = GmailApp.search('label: ' + strLabel);
+function getThreads(strSearch){
+
+  Logger.log(" - SEARCHING INBOX FOR THREADS WITH LABEL: " + strSearch);  
+  threads = GmailApp.search('label: ' + strSearch);
   return threads;
 }
 
@@ -98,6 +106,7 @@ function getThreads(strLabel){
  *@param {thread} thread - gmailApp thread object for label removal
  *@returns {thread} thread - gmailApp thread object with labels removed
  */
+
 
 function clearLabels(thread){
   Logger.log("  - Clearing message labels");
@@ -185,6 +194,7 @@ function getFileObj(fileName, getAsType = null){
       return oFile;
     }
   }
+  throw new Error("File ojject not found: " + fileName);
 }
 
 
