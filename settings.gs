@@ -4,10 +4,16 @@
 
 
 function setProp(key, value) {
+  if(key == "") {then
+    throw new Error("setProp: Null key passed to function")
+  }
   PropertiesService.getScriptProperties().setProperty(key, value);
 }
 
 function getProp(key) {
+    if(key == "") {then
+    throw new Error("getProp: Null key passed to function")
+  }
   return PropertiesService.getScriptProperties().getProperty(key);
 }
 
@@ -18,12 +24,13 @@ function getProp(key) {
 
 function SetVars() {
 
+  setProp('DEBUG', '1');
   var replyFile  = "Std Reply 2022"
   var attachFile = "Don_Briggs_Resume_2022.pdf";
 
   Logger.log("Setting up processing parameters");
-  setProp('DEBUG', '1');
-  
+
+  setProp('REPLY_FROM', "Don Briggs <DonBriggsWork@gmail.com>"); //-- Address replys will be sent from
   setProp('PROCESS_LABEL',"AUTO_TRACK" );             //-- Look for threads with this label to process
   setProp('DEST_LABEL', "Followup");                  //-- List of labels to add afer message is processed
   setProp('ATTACH_FILE', attachFile);                 //-- Resume file to attach to response
