@@ -98,26 +98,6 @@ function getThreads(strSearch){
 }
 
 
-/**
- * clearLabels
- * 
- * Removes all labels from a thread object, of an array of thread objects
- * 
- *@param {thread} thread - gmailApp thread object for label removal
- *@returns {thread} thread - gmailApp thread object with labels removed
- */
-
-
-function clearLabels(thread){
-  Logger.log("  - Clearing message labels");
-  let labels = thread.getLabels();
-    for (let label of labels) {
-      thread.removeLabel(label);
-    }
-  thread.refresh();
-  return thread;
-}
-
 
 /**
  * setLabels
@@ -216,10 +196,16 @@ function getReply(oMsg, strReplyTxt, oAttachment){
   var subject = "RE: " + oMsg.getSubject();
   var strBody = "Dear " + firstName + ":,\n\n" + strReplyTxt;
 
-  var oDraft = oMsg.createDraftReply(strBody,{
-    from: "Don Briggs <DonBriggsWork@gmail.com>",
-    subject: subject,
-    attachments: [oAttachment]
-  });
+  var oOptions = {from: getProp('REPLY_FROM'),
+                  subject: subject,
+                  attachments: oAttachment};
+
+  var oDraft = oMsg.createDraftReply(strBody, oOptions);
   return oDraft;
 }
+
+
+
+
+
+
