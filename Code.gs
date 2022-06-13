@@ -15,13 +15,11 @@
 
     Logger.log("Beginning MAIN  Run");
     SetVars();
-    threads = getThreads(getProp('PROCESS_LABEL'));
+    // threads = getThreads(getProp('PROCESS_LABEL'));
+    threads = getThreadsByLabel(getProp('PROCESS_LABEL'));
     if(threads.length == 0) {
       Logger.log("No threads  to process");
       return;
-    }
-    else {
-      Logger.log("Found threads to process: " + threads.length);
     }
     runThreads(threads);
   }  
@@ -84,7 +82,7 @@ Logger.log("BEGINNING LOOPING::");
 /**
  * getThreads
  * 
- * Retuns an array of Thread objects with a particular label
+ * Retuns an array of Thread objects by search string
  * 
  * @param {string} strCriteria Label gmail search criteria string
  * @return array of Thread objects that match search criteria
@@ -94,6 +92,26 @@ function getThreads(strSearch){
 
   Logger.log(" - SEARCHING INBOX FOR THREADS WITH LABEL: " + strSearch);  
   threads = GmailApp.search('label: ' + strSearch);
+  return threads;
+}
+
+/**
+ * getThreadsByLabel
+ * 
+ * Returns all threads with a given label
+ * 
+ * @param {string} strLabel Label to search threads
+ * @return array of Thread objects that match search criteria
+ */
+function getThreadsByLabel(strLabel) {
+  if (strLabel == '') {
+    throw new Error('getThreadsByLabel: Null label passed to function');
+  }
+  var label = GmailApp.getUserLabelByName(strLabel);
+  if (label == '') {
+    throw new Error('getThreadsByLabel: Label not found: ' + strLabel);
+  }
+  var threads = label.getThreads();
   return threads;
 }
 
