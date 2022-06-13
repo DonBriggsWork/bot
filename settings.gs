@@ -24,7 +24,7 @@ function getProp(key) {
 
 function SetVars() {
 
-  setProp('DEBUG', '1');
+  setProp('DEBUG', '0');
   var replyFile  = "Std Reply 2022"
   var attachFile = "Don_Briggs_Resume_2022.pdf";
 
