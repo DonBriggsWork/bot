@@ -49,7 +49,7 @@ Logger.log("BEGINNING LOOPING::");
     var msgId = thread.getMessages()[0].getId();
     var oMsg = GmailApp.getMessageById(msgId);
     thread.moveToArchive();
-    thread.removeLabel(oLabelRemove);
+    thread.removeLabel(oLabelRemove); Logger.log("Rremoving Label");
     thread.addLabel(oLabelAdd);
 
     var oReply = getReply(oMsg, replyText, oAttachment);
@@ -104,6 +104,7 @@ function getThreads(strSearch){
  * @return array of Thread objects that match search criteria
  */
 function getThreadsByLabel(strLabel) {
+  Logger.log("Get threads by label: " +strLabel );
   if (strLabel == '') {
     throw new Error('getThreadsByLabel: Null label passed to function');
   }

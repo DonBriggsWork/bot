@@ -26,15 +26,15 @@ function SetVars() {
 
   setProp('DEBUG', '0');
   var replyFile  = "Std Reply 2022"
-  var attachFile = "Don_Briggs_Resume_2022.pdf";
+  var attachFile = "Don_Briggs_Resume_2022a.pdf";
 
   Logger.log("Setting up processing parameters");
 
   setProp('REPLY_FROM', "Don Briggs <DonBriggsWork@gmail.com>"); //-- Address replys will be sent from
-  setProp('PROCESS_LABEL',"AUTO_TRACK" );             //-- Look for threads with this label to process
-  setProp('DEST_LABEL', "Followup");                  //-- List of labels to add afer message is processed
-  setProp('ATTACH_FILE', attachFile);                 //-- Resume file to attach to response
-  setProp('REPLY_FILE ', replyFile);                  //-- e-mail remplage to reply with
+  setProp('PROCESS_LABEL',"AUTO_TRACK" );                        //-- Look for threads with this label to process
+  setProp('DEST_LABEL', "Jobs");                                 //-- List of labels to add afer message is processed
+  setProp('ATTACH_FILE', attachFile);                            //-- Resume file to attach to response
+  setProp('REPLY_FILE ', replyFile);                             //-- e-mail address to reply with
   setProp('attachFileId', getFileId(attachFile));
   setProp('replyFileId', getFileId(replyFile));
 
