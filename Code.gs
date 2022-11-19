@@ -5,17 +5,23 @@
  * @author DonBriggs <donBriggsWork@gmail.com>
  * @version 0.1
  * 
- * Search through inbox for messages with a certian label. Reply to
+ * Search through inbox for messages marked with "PROCESS_LABEL" label. Reply to
  * them with a standard template, attach resume, mark them as read, 
- * and move them to the "Jobs" label.
-
+ * and move them to the "DEST_LABEL" label. Program parameters are set in the
+ * "settings.gs" file.
  */
 
+
+  /**
+   * main
+   * 
+   * Main function. Run this function to run the program.
+   */
+  
   function main() {
 
     Logger.log("Beginning MAIN  Run");
     SetVars();
-    // threads = getThreads(getProp('PROCESS_LABEL'));
     threads = getThreadsByLabel(getProp('PROCESS_LABEL'));
     if(threads.length == 0) {
       Logger.log("No threads  to process");
@@ -49,7 +55,7 @@ Logger.log("BEGINNING LOOPING::");
     var msgId = thread.getMessages()[0].getId();
     var oMsg = GmailApp.getMessageById(msgId);
     thread.moveToArchive();
-    thread.removeLabel(oLabelRemove); Logger.log("Rremoving Label");
+    thread.removeLabel(oLabelRemove);
     thread.addLabel(oLabelAdd);
 
     var oReply = getReply(oMsg, replyText, oAttachment);
@@ -113,6 +119,7 @@ function getThreadsByLabel(strLabel) {
     throw new Error('getThreadsByLabel: Label not found: ' + strLabel);
   }
   var threads = label.getThreads();
+  Logger.log("Found by label: " + threads.length);
   return threads;
 }
 
