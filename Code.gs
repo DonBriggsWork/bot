@@ -20,7 +20,7 @@
   
   function main() {
 
-    Logger.log("Beginning MAIN  Run");
+    Logger.log("Beginning MAIN Run");
     SetVars();
     threads = getThreadsByLabel(getProp('PROCESS_LABEL'));
     if(threads.length == 0) {
