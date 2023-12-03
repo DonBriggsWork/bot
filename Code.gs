@@ -1,4 +1,4 @@
-// @ts-nocheck
+// @TS -nocheck
 /**
  * ResumeBot
  * 
@@ -23,7 +23,7 @@
     Logger.log("Beginning MAIN Run");
     SetVars();
     threads = getThreadsByLabel(getProp('PROCESS_LABEL'));
-    if(threads.length == 0) {
+    if(!threads.length) {
       Logger.log("No threads  to process");
       return;
     }
@@ -42,8 +42,9 @@ function runThreads(threads) {
 
   Logger.log("Beginning: runThreads");
 
-  var oReplyFile  = getFileObj(getProp('REPLY_FILE'));
-  var replyText   = oReplyFile.getBody().getText();
+  // var oReplyFile  = getFileObj(getProp('REPLY_FILE'));
+  // var replyText   = oReplyFile.getBody().getText();
+  var replyText = getFileObj(getProp('REPLY_FILE')).getBody().getText();
   var oAttachment = getFileObj(getProp('ATTACH_FILE'), MimeType.PDF);
   Logger.log("Attachment: " + getProp('ATTACH_FILE'));
   oLabelRemove = GmailApp.getUserLabelByName(getProp('PROCESS_LABEL'));
@@ -54,6 +55,7 @@ Logger.log("BEGINNING LOOPING::");
   for (let thread of threads) {
     var msgId = thread.getMessages()[0].getId();
     var oMsg = GmailApp.getMessageById(msgId);
+    thread.markRead
     thread.moveToArchive();
     thread.removeLabel(oLabelRemove);
     thread.addLabel(oLabelAdd);
@@ -72,6 +74,7 @@ Logger.log("BEGINNING LOOPING::");
     var result = {
       'msgId':   msgId,
       'subject': thread.getMessages()[0].getSubject(),
+      'subject': thread.getMessages()[0].markRead(),
       'sender':  thread.getMessages()[0].getFrom(),
       'recDate': thread.getMessages()[0].getDate(),
       'replyDate': Utilities.formatDate(new Date(), "GMT+6", "dd/MM/yyyy"),

@@ -27,17 +27,15 @@ function getProp(key) {
 function SetVars() {
 
   setProp('DEBUG', '0');
-  setProp('APP_ARMED', '1');
+  setProp('APP_ARMED', '0');
 
-  var replyFile  = "Std Reply 2022a"
-  // var replyFile  = "Reminder"
-  var attachFile = "Don_Briggs_Resume_2022d.pdf";
+  var replyFile  = "Std Reply 2022a";  //-- File that provides text of the reply
+  var attachFile = "Don_Briggs_Resume_2022d.pdf"; //-- Resume file to be attached to reply
 
   Logger.log("Setting up processing parameters");
 
   setProp('REPLY_FROM', "Don Briggs <DonBriggsWork@gmail.com>"); //-- Address replys will be sent from
   setProp('PROCESS_LABEL',"AUTO_RESUME" );                       //-- Look for threads with this label to process
-  // setProp('PROCESS_LABEL',"AUTO_TRACK" );                     //-- Look for threads with this label to process
   setProp('DEST_LABEL', "Followup");                             //-- List of labels to add afer message is processed
   setProp('ATTACH_FILE', attachFile);                            //-- Resume file to attach to response
   setProp('REPLY_FILE ', replyFile);                             //-- e-mail address to reply with
