@@ -26,13 +26,9 @@ function getProp(key) {
 
 function SetVars() {
 
-  setProp('DEBUG', '0');
-  setProp('APP_ARMED', '0');
-
   var replyFile  = "Std Reply 2022a";  //-- File that provides text of the reply
   var attachFile = "Don_Briggs_Resume_2022d.pdf"; //-- Resume file to be attached to reply
 
-  Logger.log("Setting up processing parameters");
 
   setProp('REPLY_FROM', "Don Briggs <DonBriggsWork@gmail.com>"); //-- Address replys will be sent from
   setProp('PROCESS_LABEL',"AUTO_RESUME" );                       //-- Look for threads with this label to process
@@ -51,7 +47,6 @@ function getFileId(fileName) {
 
   oFiles = DriveApp.getFilesByName(fileName);
   if(oFiles.hasNext()) {
-    Logger.log("File found");
     return oFiles.next().getId();
   }
   else { 

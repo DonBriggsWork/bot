@@ -20,11 +20,10 @@
   
   function main() {
 
-    Logger.log("Beginning MAIN Run");
     SetVars();
     threads = getThreadsByLabel(getProp('PROCESS_LABEL'));
     if(!threads.length) {
-      Logger.log("No threads  to process");
+      Logger.log("No threads  to process, Exiting");
       return;
     }
     runThreads(threads);
@@ -40,17 +39,10 @@
 
 function runThreads(threads) {
 
-  Logger.log("Beginning: runThreads");
-
-  // var oReplyFile  = getFileObj(getProp('REPLY_FILE'));
-  // var replyText   = oReplyFile.getBody().getText();
   var replyText = getFileObj(getProp('REPLY_FILE')).getBody().getText();
   var oAttachment = getFileObj(getProp('ATTACH_FILE'), MimeType.PDF);
-  Logger.log("Attachment: " + getProp('ATTACH_FILE'));
   oLabelRemove = GmailApp.getUserLabelByName(getProp('PROCESS_LABEL'));
   oLabelAdd    = GmailApp.getUserLabelByName(getProp('DEST_LABEL'));
-
-Logger.log("BEGINNING LOOPING::"); 
 
   for (let thread of threads) {
     var msgId = thread.getMessages()[0].getId();
@@ -61,15 +53,7 @@ Logger.log("BEGINNING LOOPING::");
     thread.addLabel(oLabelAdd);
 
     var oReply = getReply(oMsg, replyText, oAttachment);
-
-    Logger.log("  - Processing Message ID: " + msgId);  
-
-    if (getProp('DEBUG') == 0) {
-       Logger.log("  * FIRING");
-      replyId = oReply.send();
-    } else {
-      replyId = "XXX";
-    }
+    replyId = oReply.send();
 
     var result = {
       'msgId':   msgId,
@@ -80,11 +64,8 @@ Logger.log("BEGINNING LOOPING::");
       'replyDate': Utilities.formatDate(new Date(), "GMT+6", "dd/MM/yyyy"),
       'replyId': replyId,
     }
-
-    Logger.log(result);
-    Logger.log("=============================== ITERATE ===============================");
   }  
-  Logger.log("Completed");
+
 }
 
 
@@ -99,7 +80,6 @@ Logger.log("BEGINNING LOOPING::");
 
 function getThreads(strSearch){
 
-  Logger.log(" - SEARCHING INBOX FOR THREADS WITH LABEL: " + strSearch);  
   threads = GmailApp.search('label: ' + strSearch);
   return threads;
 }
@@ -113,7 +93,7 @@ function getThreads(strSearch){
  * @return array of Thread objects that match search criteria
  */
 function getThreadsByLabel(strLabel) {
-  Logger.log("Get threads by label: " +strLabel );
+
   if (strLabel == '') {
     throw new Error('getThreadsByLabel: Null label passed to function');
   }
@@ -122,10 +102,8 @@ function getThreadsByLabel(strLabel) {
     throw new Error('getThreadsByLabel: Label not found: ' + strLabel);
   }
   var threads = label.getThreads();
-  Logger.log("Found by label: " + threads.length);
   return threads;
 }
-
 
 
 /**
@@ -164,7 +142,6 @@ function setLabels(thread, destLabels) {
 
 function getFileObj(fileName, getAsType = null){
 
-  Logger.log("  - Getting File Object");
   var oFile = null;
   var FileIterator = DriveApp.getFilesByName(fileName);
 
