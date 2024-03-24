@@ -2,28 +2,30 @@
 /**
  * ResumeBot
  * 
- * @author DonBriggs <donBriggsWork@gmail.com>
- * @version 0.1
+ * @author DonBriggs <DonBriggsWork@gmail.com>
+ * @version 0.11
  * 
- * Search through inbox for messages marked with "PROCESS_LABEL" label. Reply to
- * them with a standard template, attach resume, mark them as read, 
- * and move them to the "DEST_LABEL" label. Program parameters are set in the
+ * Search through inbox for messages marked with PROCESS_LABEL label. Reply to
+ * them with a standard template, attach resume, mark them as read, and move 
+ * them to the "DEST_LABEL" label. Program parameters are set in the
  * "settings.gs" file.
+ * 
+ * 2024-03-23: Simplified code by removing comments, logger output and debug code.
  */
 
 
-  /**
-   * main
-   * 
-   * Main function. Run this function to run the program.
-   */
+/**
+ * main
+ * 
+ * returns void
+ */
   
   function main() {
 
-    SetVars();
-    threads = getThreadsByLabel(getProp('PROCESS_LABEL'));
+    initialize();
+    const threads = getThreadsByLabel(getProp('PROCESS_LABEL'));
     if(!threads.length) {
-      Logger.log("No threads  to process, Exiting");
+      Logger.log("No threads to process");
       return;
     }
     runThreads(threads);
@@ -33,56 +35,35 @@
 /**
  * runThreads
  * 
- * Selects threads from the inbox, based on their label, automatically
- * sends a reply and begins tracking the thread
+ * Selects threads from the inbox, based on search criteria, iterates
+ * through the result set and automatically sends a reply.
  */
 
 function runThreads(threads) {
 
-  var replyText = getFileObj(getProp('REPLY_FILE')).getBody().getText();
-  var oAttachment = getFileObj(getProp('ATTACH_FILE'), MimeType.PDF);
-  oLabelRemove = GmailApp.getUserLabelByName(getProp('PROCESS_LABEL'));
-  oLabelAdd    = GmailApp.getUserLabelByName(getProp('DEST_LABEL'));
+  if(threads === "" || threads === null || threads === undefined) {
+    throw new Error("runThreads: No thread collection passed to function");
+  }
+
+  const replyText = getFileObj(getProp('REPLY_FILE')).getBody().getText();
+  const oAttachment = getFileObj(getProp('ATTACH_FILE'), MimeType.PDF);
+  const oLabelRemove = GmailApp.getUserLabelByName(getProp('PROCESS_LABEL'));
+  const oLabelAdd    = GmailApp.getUserLabelByName(getProp('DEST_LABEL'));
 
   for (let thread of threads) {
     var msgId = thread.getMessages()[0].getId();
     var oMsg = GmailApp.getMessageById(msgId);
-    thread.markRead
+    thread.markRead();
     thread.moveToArchive();
     thread.removeLabel(oLabelRemove);
     thread.addLabel(oLabelAdd);
 
+    // Construct reply and send it.
     var oReply = getReply(oMsg, replyText, oAttachment);
-    replyId = oReply.send();
-
-    var result = {
-      'msgId':   msgId,
-      'subject': thread.getMessages()[0].getSubject(),
-      'subject': thread.getMessages()[0].markRead(),
-      'sender':  thread.getMessages()[0].getFrom(),
-      'recDate': thread.getMessages()[0].getDate(),
-      'replyDate': Utilities.formatDate(new Date(), "GMT+6", "dd/MM/yyyy"),
-      'replyId': replyId,
-    }
+    var replyId = oReply.send();
   }  
-
 }
 
-
-/**
- * getThreads
- * 
- * Retuns an array of Thread objects by search string
- * 
- * @param {string} strCriteria Label gmail search criteria string
- * @return array of Thread objects that match search criteria
-*/
-
-function getThreads(strSearch){
-
-  threads = GmailApp.search('label: ' + strSearch);
-  return threads;
-}
 
 /**
  * getThreadsByLabel
@@ -92,39 +73,17 @@ function getThreads(strSearch){
  * @param {string} strLabel Label to search threads
  * @return array of Thread objects that match search criteria
  */
-function getThreadsByLabel(strLabel) {
 
-  if (strLabel == '') {
+function getThreadsByLabel(strLabel) {
+  if (strLabel === "" || strLabel === null || strLabel === undefined) {   
     throw new Error('getThreadsByLabel: Null label passed to function');
   }
-  var label = GmailApp.getUserLabelByName(strLabel);
+
+  const label = GmailApp.getUserLabelByName(strLabel);
   if (label == '') {
     throw new Error('getThreadsByLabel: Label not found: ' + strLabel);
   }
-  var threads = label.getThreads();
-  return threads;
-}
-
-
-/**
- * setLabels
- * 
- * Clear all existing labels for a thread, and set a new one
- * 
- * @param {object} thread - gmailApp Thread object to change labels for
- * @param {string} destLabel - New label to set for this thread
- * @returns void
- */
-
-function setLabels(thread, destLabels) {
-
-  var newLabel = GmailApp.getUserLabelByName(destLabel);
-  if (newLabel !== null){
-    thread.addLabel(newLabel).refresh();
-  } else {
-    throw new Error("ERROR: Could not add label: '" + destLabel + "', does not exist.");
-  }
-  return thread;
+  return label.getThreads();
 }
 
 
@@ -142,6 +101,10 @@ function setLabels(thread, destLabels) {
 
 function getFileObj(fileName, getAsType = null){
 
+  if (fileName === "" || fileName === null || fileName === undefined) {
+    throw new Error('getFileObject: Null fileName passed to function');
+  }
+
   var oFile = null;
   var FileIterator = DriveApp.getFilesByName(fileName);
 
@@ -152,7 +115,7 @@ function getFileObj(fileName, getAsType = null){
 
     if (file.getName() == fileName)
     {
-      var id = file.getId();
+      const id = file.getId();
       var mimeType = file.getMimeType();
       if (getAsType !== null) {
         //-- Get file as particular mime type
@@ -197,6 +160,7 @@ function getFileObj(fileName, getAsType = null){
  */
 
 function getReply(oMsg, strReplyTxt, oAttachment){
+
   var sender = oMsg.getFrom();
   var firstName = sender.split(" ")[0];
   var subject = "RE: " + oMsg.getSubject();
@@ -209,9 +173,3 @@ function getReply(oMsg, strReplyTxt, oAttachment){
   var oDraft = oMsg.createDraftReply(strBody, oOptions);
   return oDraft;
 }
-
-
-
-
-
-
