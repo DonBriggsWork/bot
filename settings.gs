@@ -26,8 +26,8 @@ function getProp(key) {
 
 function SetVars() {
 
-  var replyFile  = "Std Reply 2022a";  //-- File that provides text of the reply
-  var attachFile = "Don_Briggs_Resume_2022d.pdf"; //-- Resume file to be attached to reply
+  var replyFile  = "Std_Reply";  //-- File that provides text of the reply
+  var attachFile = "Don_Briggs_Resume_2024a.pdf"; //-- Resume file to be attached to reply
 
 
   setProp('REPLY_FROM', "Don Briggs <DonBriggsWork@gmail.com>"); //-- Address replys will be sent from
