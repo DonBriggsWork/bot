@@ -11,6 +11,41 @@
  * "settings.gs" file.
  */
 
+/**
+ * doGet
+ * 
+ * This function is called by the web server. This function generates an HTML
+ * response to be sent to the browser.
+ * 
+ * @param object e Additional request parameters
+ * @return HTML Response to be sent to browser as HTML.
+ */
+
+var numThreads=0;
+var curThread=0;
+
+
+function doGet(e) {
+
+  return HtmlService.createTemplateFromFile('index') 
+          .evaluate()
+          .setSandboxMode(HtmlService.SandboxMode.IFRAME);
+}
+
+/**
+ * include
+ * 
+ * Include an external file in the current file.
+ * 
+ * @params  string filename The name of the file to include, without the extension added by editor
+ * @return  string HTML encoded representation of file to be included
+ */
+
+function include(filename) {
+  return HtmlService.createHtmlOutputFromFile(filename)
+      .getContent();
+}
+
 
   /**
    * main
@@ -19,16 +54,16 @@
    */
   
   function main() {
-
     SetVars();
     threads = getThreadsByLabel(getProp('PROCESS_LABEL'));
     if(!threads.length) {
       Logger.log("No threads  to process, Exiting");
       return;
     }
+    numThreads=threads.length;
+    curThread=1;
     runThreads(threads);
   }  
-
 
 /**
  * runThreads
@@ -36,15 +71,15 @@
  * Selects threads from the inbox, based on their label, automatically
  * sends a reply and begins tracking the thread
  */
-
 function runThreads(threads) {
-
+Logger.log("Running: runThreads");
   var replyText = getFileObj(getProp('REPLY_FILE')).getBody().getText();
   var oAttachment = getFileObj(getProp('ATTACH_FILE'), MimeType.PDF);
   oLabelRemove = GmailApp.getUserLabelByName(getProp('PROCESS_LABEL'));
   oLabelAdd    = GmailApp.getUserLabelByName(getProp('DEST_LABEL'));
 
   for (let thread of threads) {
+    Logger.log("  - Processing thread: " + curThread + " of: " + numThreads);
     var msgId = thread.getMessages()[0].getId();
     var oMsg = GmailApp.getMessageById(msgId);
     thread.markRead
@@ -64,6 +99,9 @@ function runThreads(threads) {
       'replyDate': Utilities.formatDate(new Date(), "GMT+6", "dd/MM/yyyy"),
       'replyId': replyId,
     }
+    Logger.log(result)
+    curThread++;
+    Logger.log("[ITERATING!!]");
   }  
 
 }
@@ -80,7 +118,18 @@ function runThreads(threads) {
 
 function getThreads(strSearch){
 
+logger.log(" - Running: getThreads");
+for (let thread of threads) {
+  var messages = thread.getMessages();
+  var lastMessage = messages[messages.length - 1];
+  
+  Logger.log("   * Processing thread: " + lastMessage.getSubject());
+  
+  // Process the thread
+  // ...
+}
   threads = GmailApp.search('label: ' + strSearch);
+  Logger.log("Found: ")
   return threads;
 }
 
@@ -94,6 +143,7 @@ function getThreads(strSearch){
  */
 function getThreadsByLabel(strLabel) {
 
+  Logger.log(" - Running: getThreadsByLabel");
   if (strLabel == '') {
     throw new Error('getThreadsByLabel: Null label passed to function');
   }
@@ -102,6 +152,7 @@ function getThreadsByLabel(strLabel) {
     throw new Error('getThreadsByLabel: Label not found: ' + strLabel);
   }
   var threads = label.getThreads();
+  Logger.log("    * Returning: " + threads.length + " threads.");
   return threads;
 }
 
