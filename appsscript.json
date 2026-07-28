@@ -1,0 +1,10 @@
+{
+  "timeZone": "America/Denver",
+  "exceptionLogging": "NONE",
+  "runtimeVersion": "V8",
+  "dependencies": {},
+  "webapp": {
+    "executeAs": "USER_DEPLOYING",
+    "access": "MYSELF"
+  }
+}

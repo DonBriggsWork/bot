@@ -1,0 +1,25 @@
+<script>
+
+    document.addEventListener('DOMContentLoaded', function() {
+      var elems = document.querySelectorAll('select');
+      var instances = M.FormSelect.init(elems);
+    });
+
+      document.getElementById("btn_Execute").addEventListener("click", doStuff);
+
+      function doStuff() {
+        var userInfo = {};
+
+        userInfo.fName = document.getElementById("fName").value;
+        userInfo.lName = document.getElementById("lName").value;
+        userInfo.weapon = document.getElementById("weapon").value;
+        document.getElementById("fName").value = "";
+        document.getElementById("lName").value = "";
+
+        var myWeapon = document.getElementById("weapon");
+        myWeapon.selectedIndex = 0;
+        M.FormSelect.init(myWeapon);
+
+        google.script.run.btnExecuteClicked(userInfo);
+      }
+</script>

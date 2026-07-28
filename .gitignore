@@ -1,0 +1,16 @@
+# Clasp configuration & OAuth credentials
+.clasp.json
+.clasprc.json
+
+# Dependency folders & lockfiles
+node_modules/
+package-lock.json
+
+# Environment variables & secrets (if added later)
+.env
+*.env
+
+# Operating system & IDE files
+.DS_Store
+Thumbs.db
+.vscode/

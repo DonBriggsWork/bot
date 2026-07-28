@@ -1,0 +1,36 @@
+<style>
+  * {
+    margin: 0; /* Reset default body margins to ensure full viewport coverage */
+    height: 100%; /* Ensure the body takes up the full viewport height */
+    font-family: Arial, sans-serif;
+  }
+
+#container {
+    width: 100%;
+    height: 100%;
+    font-family: Arial, sans-serif;
+    position: relative; /* Needed for absolute positioning of the panel */
+    background-color: red; /* Different background color for container */
+}
+
+.panel {
+    width: 100%; /* Full width of the container */
+    color: green;
+    position: absolute; /* Pin to the top using absolute positioning */
+    top: 0;
+    left: 0;
+    box-sizing: border-box; /* Include padding and border in element's total width and height */
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white for the panel */
+}
+
+#content {
+    /* width: 100%;  Full width, will expand as content added */
+    margin-top: 50px; /* Add margin to avoid overlap with the panel.  Adjust as needed based on panel height and padding*/
+    background-color: rgb(240, 240, 240); /* Different background color for content.  Light gray. */
+    padding: 20px; /* Add some padding for content */
+    box-sizing: border-box;
+    min-height: calc(100% - 50px); /* Ensure content area takes up remaining height, adjust 50px if panel height changes */
+}
+
+</style>
